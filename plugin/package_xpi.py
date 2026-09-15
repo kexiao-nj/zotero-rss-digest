@@ -1,15 +1,21 @@
 #!/usr/bin/env python3
-"""Pack plugin/ into an installable Zotero 10 XPI."""
+"""Pack plugin/ into an installable Zotero 10 XPI and refresh updates.json."""
 from __future__ import annotations
 
+import hashlib
+import json
+import shutil
 import struct
 import zlib
 import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-OUT = ROOT.parent / "build" / "rss-digest.xpi"
+REPO = ROOT.parent
+OUT = REPO / "build" / "rss-digest.xpi"
+DIST = REPO / "dist"
 INCLUDE = ("manifest.json", "bootstrap.js", "prefs.js", "content", "locale")
+RAW_BASE = "https://raw.githubusercontent.com/kexiao-nj/zotero-rss-digest/main"
 
 
 def png_chunk(tag: bytes, data: bytes) -> bytes:
@@ -46,6 +52,37 @@ def add(z: zipfile.ZipFile, path: Path, arc: str) -> None:
         z.write(path, arc)
 
 
+def sha256_file(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def write_updates(manifest: dict, versioned_name: str, digest: str) -> None:
+    addon_id = manifest["applications"]["zotero"]["id"]
+    apps = manifest["applications"]["zotero"]
+    payload = {
+        "addons": {
+            addon_id: {
+                "updates": [
+                    {
+                        "version": manifest["version"],
+                        "update_link": f"{RAW_BASE}/dist/{versioned_name}",
+                        "update_hash": f"sha256:{digest}",
+                        "applications": {
+                            "zotero": {
+                                "strict_min_version": apps["strict_min_version"],
+                                "strict_max_version": apps["strict_max_version"],
+                            }
+                        },
+                    }
+                ]
+            }
+        }
+    }
+    path = ROOT / "updates.json"
+    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    print(f"Wrote {path.relative_to(REPO)}")
+
+
 def main() -> None:
     write_icon(ROOT / "content" / "icon.png", 48)
     write_icon(ROOT / "content" / "icon@2x.png", 96)
@@ -55,7 +92,21 @@ def main() -> None:
     with zipfile.ZipFile(OUT, "w", zipfile.ZIP_DEFLATED) as z:
         for name in INCLUDE:
             add(z, ROOT / name, name)
-    print(f"Wrote {OUT} ({OUT.stat().st_size} bytes)")
+
+    manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
+    version = manifest["version"]
+    versioned_name = f"rss-digest-{version}.xpi"
+    DIST.mkdir(parents=True, exist_ok=True)
+    versioned = DIST / versioned_name
+    latest = DIST / "rss-digest.xpi"
+    shutil.copyfile(OUT, versioned)
+    shutil.copyfile(OUT, latest)
+    digest = sha256_file(OUT)
+    write_updates(manifest, versioned_name, digest)
+    print(f"Wrote {OUT.relative_to(REPO)} ({OUT.stat().st_size} bytes)")
+    print(f"Wrote {versioned.relative_to(REPO)}")
+    print(f"Wrote {latest.relative_to(REPO)}")
+    print(f"sha256:{digest}")
 
 
 if __name__ == "__main__":

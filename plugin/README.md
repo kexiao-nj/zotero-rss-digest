@@ -11,6 +11,10 @@ Build:
 python3 plugin/package_xpi.py
 ```
 
-Output: `../build/rss-digest.xpi` (version in `manifest.json`).
+Output:
 
-Download the latest packaged build: [`dist/rss-digest.xpi`](https://github.com/kexiao-nj/zotero-rss-digest/raw/main/dist/rss-digest.xpi).
+- `../build/rss-digest.xpi`
+- `../dist/rss-digest.xpi` and `../dist/rss-digest-<version>.xpi`
+- `updates.json` with `update_link` + `update_hash` (Zotero auto-update)
+
+Version comes from `manifest.json`. After packing, commit those files and push `main` so installed copies can update.

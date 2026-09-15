@@ -4,7 +4,8 @@
       "updates": [
         {
           "version": "0.2.17",
-          "update_link": "https://github.com/kexiao-nj/zotero-rss-digest/raw/main/dist/rss-digest.xpi",
+          "update_link": "https://raw.githubusercontent.com/kexiao-nj/zotero-rss-digest/main/dist/rss-digest-0.2.17.xpi",
+          "update_hash": "sha256:2eb6ba9b03178a29dfdabf8c866bb36be67ac7068569863f61646a5997ce4c22",
           "applications": {
             "zotero": {
               "strict_min_version": "10.0",

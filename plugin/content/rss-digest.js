@@ -1,6 +1,6 @@
 var RSS_DIGEST_PREF_PREFIX = "extensions.rssdigest.";
 var RSS_DIGEST_XPI_URL =
-  "https://github.com/kexiao-nj/zotero-rss-digest/raw/main/dist/rss-digest.xpi";
+  "https://raw.githubusercontent.com/kexiao-nj/zotero-rss-digest/main/dist/rss-digest.xpi";
 
 Zotero.RSSDigest = {
   pluginID: "rss-digest@zotero-rss-analyzer.local",

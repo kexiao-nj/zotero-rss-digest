@@ -98,6 +98,22 @@ Score 是 **0–5 的相关度**，不是引用量。显示值优先用 LLM 分�
 
 面板是盖在主窗口上的 HTML，而不是独立 chrome 窗口。控件使用 `textarea` 和可点击的 `div`（XUL 主窗口里 HTML `input`/`button` 往往点不到）。
 
+## 自动更新
+
+Zotero 自己检查更新，插件里不用再写一套更新逻辑。
+
+1. 已安装的 XPI 里带有 `manifest.json` → `applications.zotero.update_url`，指向仓库里的 [`plugin/updates.json`](plugin/updates.json)。
+2. Zotero 会定期（也可在 **工具 → 插件 → 齿轮 → Check for Updates**）拉取该 JSON。
+3. 若 JSON 里的 `version` 比本机高，且 `update_hash`（XPI 的 SHA-256）匹配，就下载 `update_link` 并安装。
+
+发布新版本：
+
+1. 改 `plugin/manifest.json` 的 `version`（以及 README 里的版本号）。
+2. 在仓库根目录运行 `python3 plugin/package_xpi.py`。脚本会写出 `dist/rss-digest.xpi`、`dist/rss-digest-<version>.xpi`，并写入带 `update_hash` 的 `plugin/updates.json`。
+3. 把 `plugin/manifest.json`、`plugin/updates.json`、`dist/*.xpi` 提交并 **push 到 `main`**。`update_url` 读的是 GitHub 上的文件，不 push 就不会更新。
+
+已安装 **0.2.17 及以后** 的用户会自动收到后续版本。更早手动装的包如果 `update_url` 还指向旧仓库，需要重新安装一次当前 XPI。
+
 ## 可选：Python CLI
 
 仓库里仍有离线命令行 `zotero-rss`，适合不装插件、只出 Markdown 简报的场景。它通过复制 `zotero.sqlite` 读 Feeds（Local API 不暴露订阅）。

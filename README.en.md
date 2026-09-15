@@ -98,6 +98,22 @@ Do not call `Zotero.ftl.addResourceIds` or `PreferencePanes.register`; both brea
 
 The UI is an HTML overlay on the main window, not a standalone chrome window. Controls use `textarea` and clickable `div`s because HTML `input`/`button` often do not receive events inside the XUL main window.
 
+## Automatic updates
+
+Zotero’s add-on manager does the checking. The plugin does not ship a custom updater.
+
+1. The installed XPI’s `manifest.json` has `applications.zotero.update_url`, which points at [`plugin/updates.json`](plugin/updates.json).
+2. Zotero fetches that JSON on a timer, or when you choose **Tools → Plugins → gear → Check for Updates**.
+3. If `version` is newer than the installed copy and `update_hash` (SHA-256 of the XPI) matches, Zotero downloads `update_link` and installs it.
+
+To publish a new version:
+
+1. Bump `version` in `plugin/manifest.json` (and the README).
+2. From the repo root run `python3 plugin/package_xpi.py`. That writes `dist/rss-digest.xpi`, `dist/rss-digest-<version>.xpi`, and `plugin/updates.json` with `update_hash`.
+3. Commit `plugin/manifest.json`, `plugin/updates.json`, and `dist/*.xpi`, then **push to `main`**. The live `update_url` is the file on GitHub.
+
+Builds **0.2.17 and later** pick up later versions automatically. Older sideloaded XPIs that still point at a previous `update_url` need a one-time reinstall.
+
 ## Optional Python CLI
 
 The repo still includes an offline CLI (`zotero-rss`) for Markdown digests without installing the plugin. It copies `zotero.sqlite` to read Feeds (the local API does not expose RSS).
