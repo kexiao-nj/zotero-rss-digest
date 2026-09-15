@@ -3,9 +3,9 @@
     "rss-digest@zotero-rss-analyzer.local": {
       "updates": [
         {
-          "version": "0.2.17",
-          "update_link": "https://raw.githubusercontent.com/kexiao-nj/zotero-rss-digest/main/dist/rss-digest-0.2.17.xpi",
-          "update_hash": "sha256:2eb6ba9b03178a29dfdabf8c866bb36be67ac7068569863f61646a5997ce4c22",
+          "version": "0.3.1",
+          "update_link": "https://raw.githubusercontent.com/kexiao-nj/zotero-rss-digest/main/dist/rss-digest-0.3.1.xpi",
+          "update_hash": "sha256:ddfbcba76a146bf2ef0ea0042a2e0450e93fc43256a48bdefd055578513a72e5",
           "applications": {
             "zotero": {
               "strict_min_version": "10.0",

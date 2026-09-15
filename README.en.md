@@ -4,9 +4,9 @@
 
 A **Zotero 10 plugin** that reads **RSS Feeds** in the left pane, filters them against your research profile, optionally distills cards with an OpenAI-compatible LLM (Chinese or English), and lets you save selected items into My Library.
 
-**Current version: 0.2.17** · Compatible with **Zotero 10.0–10.0.\*** (including 10.0.2)
+**Current version: 0.3.1** · Compatible with **Zotero 10.0–10.0.\*** (including 10.0.2)
 
-[**Download rss-digest.xpi (v0.2.17)**](https://github.com/kexiao-nj/zotero-rss-digest/raw/main/dist/rss-digest.xpi)
+[**Download rss-digest.xpi (v0.3.1)**](https://github.com/kexiao-nj/zotero-rss-digest/raw/main/dist/rss-digest.xpi)
 
 ## Install
 

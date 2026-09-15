@@ -208,7 +208,7 @@ Zotero.RSSDigest = {
   },
 
   displayVersion() {
-    return String(this.version || "0.2.17");
+    return String(this.version || "0.3.1");
   },
 
   openXpiDownload() {

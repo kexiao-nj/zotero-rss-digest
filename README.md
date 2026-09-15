@@ -4,9 +4,9 @@
 
 Zotero 10 插件：读取左侧 **订阅（RSS Feeds）**，按研究画像筛选，可选调用兼容 OpenAI 的 LLM 写成中文/英文卡片，再把感兴趣的文献一键存进「我的文库」。
 
-**当前版本：0.2.17** · 兼容 **Zotero 10.0–10.0.\***（含 10.0.2）
+**当前版本：0.3.1** · 兼容 **Zotero 10.0–10.0.\***（含 10.0.2）
 
-[**下载 rss-digest.xpi（v0.2.17）**](https://github.com/kexiao-nj/zotero-rss-digest/raw/main/dist/rss-digest.xpi)
+[**下载 rss-digest.xpi（v0.3.1）**](https://github.com/kexiao-nj/zotero-rss-digest/raw/main/dist/rss-digest.xpi)
 
 ## 安装
 
