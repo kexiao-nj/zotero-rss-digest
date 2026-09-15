@@ -6,15 +6,15 @@ A **Zotero 10 plugin** that reads **RSS Feeds** in the left pane, filters them a
 
 **Current version: 0.2.17** · Compatible with **Zotero 10.0–10.0.\*** (including 10.0.2)
 
-[**Download rss-digest.xpi (v0.2.17)**](https://github.com/kexiao-nj/zotero-rss-digest/releases/latest/download/rss-digest.xpi)
+[**Download rss-digest.xpi (v0.2.17)**](https://github.com/kexiao-nj/zotero-rss-digest/raw/main/dist/rss-digest.xpi)
 
 ## Install
 
-1. Download [rss-digest.xpi](https://github.com/kexiao-nj/zotero-rss-digest/releases/latest/download/rss-digest.xpi).
+1. Download [rss-digest.xpi](https://github.com/kexiao-nj/zotero-rss-digest/raw/main/dist/rss-digest.xpi).
 2. In Zotero: **Tools → Plugins → gear → Install Plugin From File…** and choose the downloaded `.xpi`.
 3. **Fully quit and restart Zotero**.
 
-Older builds are on [Releases](https://github.com/kexiao-nj/zotero-rss-digest/releases). This plugin does not register a Zotero Preference pane. Settings live in the plugin overlay.
+The packaged plugin is also in [`dist/rss-digest.xpi`](https://github.com/kexiao-nj/zotero-rss-digest/blob/main/dist/rss-digest.xpi). This plugin does not register a Zotero Preference pane. Settings live in the plugin overlay.
 
 Pack from source:
 

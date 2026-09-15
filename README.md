@@ -6,15 +6,15 @@ Zotero 10 插件：读取左侧 **订阅（RSS Feeds）**，按研究画像筛�
 
 **当前版本：0.2.17** · 兼容 **Zotero 10.0–10.0.\***（含 10.0.2）
 
-[**下载 rss-digest.xpi（v0.2.17）**](https://github.com/kexiao-nj/zotero-rss-digest/releases/latest/download/rss-digest.xpi)
+[**下载 rss-digest.xpi（v0.2.17）**](https://github.com/kexiao-nj/zotero-rss-digest/raw/main/dist/rss-digest.xpi)
 
 ## 安装
 
-1. 下载 [rss-digest.xpi](https://github.com/kexiao-nj/zotero-rss-digest/releases/latest/download/rss-digest.xpi)。
+1. 下载 [rss-digest.xpi](https://github.com/kexiao-nj/zotero-rss-digest/raw/main/dist/rss-digest.xpi)。
 2. 在 Zotero：**工具 → 插件 → 齿轮 → Install Plugin From File…**，选择刚下载的 `.xpi`。
 3. **完全退出并重启 Zotero**。
 
-历史版本见 [Releases](https://github.com/kexiao-nj/zotero-rss-digest/releases)。不要把本插件注册进 Zotero 自带设置页；设置在插件自己的面板里。
+安装包也托管在仓库 [`dist/rss-digest.xpi`](https://github.com/kexiao-nj/zotero-rss-digest/blob/main/dist/rss-digest.xpi)。不要把本插件注册进 Zotero 自带设置页；设置在插件自己的面板里。
 
 本地从源码打包：
 
