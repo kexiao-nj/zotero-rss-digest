@@ -4,20 +4,25 @@
 
 Zotero 10 插件：读取左侧 **订阅（RSS Feeds）**，按研究画像筛选，可选调用兼容 OpenAI 的 LLM 写成中文/英文卡片，再把感兴趣的文献一键存进「我的文库」。
 
-当前包版本：**0.2.16**。兼容 **Zotero 10.0–10.0.\***（含 10.0.2）。
+**当前版本：0.2.17** · 兼容 **Zotero 10.0–10.0.\***（含 10.0.2）
+
+[**下载 rss-digest.xpi（v0.2.17）**](https://github.com/kexiao-nj/zotero-rss-digest/releases/latest/download/rss-digest.xpi)
 
 ## 安装
 
-1. 打包（在仓库根目录）：
+1. 下载 [rss-digest.xpi](https://github.com/kexiao-nj/zotero-rss-digest/releases/latest/download/rss-digest.xpi)。
+2. 在 Zotero：**工具 → 插件 → 齿轮 → Install Plugin From File…**，选择刚下载的 `.xpi`。
+3. **完全退出并重启 Zotero**。
+
+历史版本见 [Releases](https://github.com/kexiao-nj/zotero-rss-digest/releases)。不要把本插件注册进 Zotero 自带设置页；设置在插件自己的面板里。
+
+本地从源码打包：
 
 ```bash
 python3 plugin/package_xpi.py
 ```
 
-2. 在 Zotero：**工具 → 插件 → 齿轮 → Install Plugin From File…**，选择 `build/rss-digest.xpi`。
-3. **完全退出并重启 Zotero**。
-
-不要把本插件注册进 Zotero 自带设置页；设置在插件自己的面板里。
+输出为 `build/rss-digest.xpi`。
 
 ## 使用
 
@@ -25,11 +30,11 @@ python3 plugin/package_xpi.py
 
 | 操作 | 作用 |
 |---|---|
-| **立即扫描** | 只处理尚未见过的条目（增量）。 |
-| **重新扫描** | 按回看窗口（默认最近 7 天）再扫一遍，不跳过已见过的 GUID。 |
+| **立即扫描** | 只处理尚未见过、且落在扫描时间范围内的条目（增量）。 |
+| **重新扫描** | 按设置里的时间范围再扫一遍，不跳过已见过的 GUID。默认最近 7 天。 |
 | **导出 Markdown** | 把当前结果存成 `.md` 文件。需先有扫描结果。 |
 | **结果** | 查看卡片。 |
-| **设置** | API、语言、Collection、Topics / Keywords。改完后点 **保存设置**。 |
+| **设置** | API、语言、扫描时间范围、Collection、Topics / Keywords。改完后点 **保存设置**。 |
 | **添加到我的文库** | 用 Zotero 自己的订阅翻译写入指定 Collection，并附一条提炼笔记。 |
 
 高分条目**不会**自动入库，由你点选。
@@ -42,6 +47,7 @@ python3 plugin/package_xpi.py
 |---|---|
 | Base URL / API Key / Model | 兼容 OpenAI 的接口（DeepSeek、OpenRouter、本地 vLLM 均可）。**不填 Key 则只做关键词筛选，不翻译、不调用 LLM。** |
 | Interval (hours) | 后台定时扫描间隔，默认 6 小时。 |
+| Lookback days / 起始–结束日期 | 只扫描这个时间范围内的条目。日期留空则按回看天数从今天往回算，**默认 7 天**。填了起始/结束日期则按该区间（结束日期留空则到今天）。「填入最近 N 天」会把回看天数写成具体日期。 |
 | Digest language | **中文**：标题、摘要和提炼卡片译成简体中文，原标题/原文摘要仍保留。**English**：卡片为英文。 |
 | Save-to collection | 入库集合名，不存在会自动创建，默认 `RSS Digest`。 |
 | **Topics** | 课题方向，一行一个。与 Include 一起做匹配并加规则分；有 API Key 时作为 LLM 的研究画像。 |

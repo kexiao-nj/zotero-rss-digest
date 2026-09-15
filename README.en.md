@@ -4,20 +4,25 @@
 
 A **Zotero 10 plugin** that reads **RSS Feeds** in the left pane, filters them against your research profile, optionally distills cards with an OpenAI-compatible LLM (Chinese or English), and lets you save selected items into My Library.
 
-Current XPI: **0.2.16**. Compatible with **Zotero 10.0–10.0.\*** (including 10.0.2).
+**Current version: 0.2.17** · Compatible with **Zotero 10.0–10.0.\*** (including 10.0.2)
+
+[**Download rss-digest.xpi (v0.2.17)**](https://github.com/kexiao-nj/zotero-rss-digest/releases/latest/download/rss-digest.xpi)
 
 ## Install
 
-1. Pack the XPI from the repo root:
+1. Download [rss-digest.xpi](https://github.com/kexiao-nj/zotero-rss-digest/releases/latest/download/rss-digest.xpi).
+2. In Zotero: **Tools → Plugins → gear → Install Plugin From File…** and choose the downloaded `.xpi`.
+3. **Fully quit and restart Zotero**.
+
+Older builds are on [Releases](https://github.com/kexiao-nj/zotero-rss-digest/releases). This plugin does not register a Zotero Preference pane. Settings live in the plugin overlay.
+
+Pack from source:
 
 ```bash
 python3 plugin/package_xpi.py
 ```
 
-2. In Zotero: **Tools → Plugins → gear → Install Plugin From File…** and choose `build/rss-digest.xpi`.
-3. **Fully quit and restart Zotero**.
-
-This plugin does not register a Zotero Preference pane. Settings live in the plugin overlay.
+Output: `build/rss-digest.xpi`.
 
 ## Use
 
@@ -25,11 +30,11 @@ Open **Tools → RSS Digest**. An overlay appears on the main window (Scan now /
 
 | Action | What it does |
 |---|---|
-| **Scan now** | Incremental: only items not seen before. |
-| **Rescan** | Scan again within the lookback window (default last 7 days), including GUIDs already seen. |
+| **Scan now** | Incremental: unseen items inside the scan window. |
+| **Rescan** | Scan again within the configured date range (default last 7 days), including GUIDs already seen. |
 | **Export Markdown** | Save the current results as a `.md` file. Requires a completed scan. |
 | **Results** | Show cards. |
-| **Settings** | API, language, collection, topics / keywords. Click **Save settings** after edits. |
+| **Settings** | API, language, scan window, collection, topics / keywords. Click **Save settings** after edits. |
 | **Add to My Library** | Uses Zotero’s own feed translation into the named collection, and attaches a digest note. |
 
 High-scoring items are **not** saved automatically. You choose what enters the library.
@@ -42,6 +47,7 @@ Scan progress is shown on the results pane (feeds / LLM / translation / percent)
 |---|---|
 | Base URL / API Key / Model | OpenAI-compatible endpoint (DeepSeek, OpenRouter, local vLLM). **Leave the key empty for keyword-only scans (no translation, no LLM).** |
 | Interval (hours) | Background scan timer. Default 6. |
+| Lookback days / From–To | Only items in this window are scanned. Leave dates empty to use lookback days from today (**default 7**). Fill from/to for a fixed range (empty To means today). “Fill last N days” writes the lookback as dates. |
 | Digest language | **中文**: title, abstract, and digest cards are translated into Simplified Chinese; original title/abstract are kept. **English**: cards stay in English. |
 | Save-to collection | Target collection; created if missing. Default `RSS Digest`. |
 | **Topics** | Research directions, one per line. Count toward the rule score with include keywords, and are sent to the LLM as your profile. |

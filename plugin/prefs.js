@@ -11,3 +11,5 @@ pref("extensions.rssdigest.minRuleScore", 2);
 pref("extensions.rssdigest.minLlmScore", 3);
 pref("extensions.rssdigest.llmBatchCap", 30);
 pref("extensions.rssdigest.firstLookbackDays", 7);
+pref("extensions.rssdigest.scanFrom", "");
+pref("extensions.rssdigest.scanTo", "");

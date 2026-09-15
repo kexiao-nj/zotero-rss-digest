@@ -3,8 +3,8 @@
     "rss-digest@zotero-rss-analyzer.local": {
       "updates": [
         {
-          "version": "0.2.16",
-          "update_link": "https://raw.githubusercontent.com/kexiao/zotero-tss-analyzer/main/build/rss-digest.xpi",
+          "version": "0.2.17",
+          "update_link": "https://github.com/kexiao-nj/zotero-rss-digest/releases/latest/download/rss-digest.xpi",
           "applications": {
             "zotero": {
               "strict_min_version": "10.0",

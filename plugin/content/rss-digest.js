@@ -1,4 +1,6 @@
 var RSS_DIGEST_PREF_PREFIX = "extensions.rssdigest.";
+var RSS_DIGEST_XPI_URL =
+  "https://github.com/kexiao-nj/zotero-rss-digest/releases/latest/download/rss-digest.xpi";
 
 Zotero.RSSDigest = {
   pluginID: "rss-digest@zotero-rss-analyzer.local",
@@ -77,6 +79,9 @@ Zotero.RSSDigest = {
     fill("rss-digest-api-key", "apiKey", "");
     fill("rss-digest-model", "model", "gpt-4o-mini");
     fill("rss-digest-interval", "intervalHours", 6);
+    fill("rss-digest-lookback", "firstLookbackDays", 7);
+    fill("rss-digest-scan-from", "scanFrom", "");
+    fill("rss-digest-scan-to", "scanTo", "");
     fill("rss-digest-collection", "collectionName", "RSS Digest");
     fill("rss-digest-topics", "topics", "");
     fill("rss-digest-include", "includeKeywords", "");
@@ -104,15 +109,22 @@ Zotero.RSSDigest = {
       }
     };
 
+    const val = (id, fallback = "") => {
+      const el = $(id);
+      return el ? String(el.value ?? fallback) : fallback;
+    };
+
     const saveAll = () => {
-      const val = (id, fallback = "") => {
-        const el = $(id);
-        return el ? String(el.value ?? fallback) : fallback;
-      };
       this.setPref("apiBase", val("rss-digest-api-base").trim());
       this.setPref("apiKey", val("rss-digest-api-key").trim());
       this.setPref("model", val("rss-digest-model").trim() || "gpt-4o-mini");
       this.setPref("intervalHours", Number(val("rss-digest-interval")) || 6);
+      this.setPref(
+        "firstLookbackDays",
+        Math.max(1, Number(val("rss-digest-lookback")) || 7),
+      );
+      this.setPref("scanFrom", this._parseISODate(val("rss-digest-scan-from")));
+      this.setPref("scanTo", this._parseISODate(val("rss-digest-scan-to")));
       this.setPref("language", pendingLang || "zh");
       this.setPref("collectionName", val("rss-digest-collection").trim() || "RSS Digest");
       this.setPref("topics", val("rss-digest-topics"));
@@ -121,6 +133,30 @@ Zotero.RSSDigest = {
       this.startTimer();
       setStatus(this.t("已保存。", "Saved."));
     };
+
+    const fillWindowBtn = $("rss-digest-fill-window");
+    fillWindowBtn?.addEventListener("mousedown", (e) => {
+      e.stopPropagation();
+      const days = Math.max(1, Number(val("rss-digest-lookback")) || 7);
+      const to = new Date();
+      const from = new Date();
+      from.setHours(0, 0, 0, 0);
+      from.setDate(from.getDate() - days);
+      const fromEl = $("rss-digest-scan-from");
+      const toEl = $("rss-digest-scan-to");
+      if (fromEl) {
+        fromEl.value = this._localISODate(from);
+      }
+      if (toEl) {
+        toEl.value = this._localISODate(to);
+      }
+    });
+
+    const downloadBtn = $("rss-digest-download");
+    downloadBtn?.addEventListener("mousedown", (e) => {
+      e.stopPropagation();
+      this.openXpiDownload();
+    });
 
     const saveBtn = $("rss-digest-save-prefs");
     saveBtn?.addEventListener("mousedown", (e) => {
@@ -169,6 +205,23 @@ Zotero.RSSDigest = {
 
   t(zh, en) {
     return this.isZh() ? zh : en;
+  },
+
+  displayVersion() {
+    return String(this.version || "0.2.17");
+  },
+
+  openXpiDownload() {
+    const url = RSS_DIGEST_XPI_URL;
+    try {
+      if (typeof Zotero.launchURL === "function") {
+        Zotero.launchURL(url);
+        return;
+      }
+    } catch (e) {
+      Zotero.debug("RSS Digest: launchURL failed: " + e);
+    }
+    Zotero.getMainWindow()?.open(url, "_blank");
   },
 
   profile() {
@@ -414,7 +467,12 @@ Zotero.RSSDigest = {
       return null;
     }
     let host = doc.getElementById("rss-digest-host");
-    if (host && !host.querySelector("#rd-profile-help")) {
+    if (
+      host &&
+      (!host.querySelector("#rd-profile-help") ||
+        !host.querySelector("#rss-digest-lookback") ||
+        !host.querySelector("#rd-version"))
+    ) {
       host.remove();
       host = null;
     }
@@ -480,9 +538,11 @@ Zotero.RSSDigest = {
 
   _overlayMarkup() {
     const zh = this.isZh();
+    const ver = this.displayVersion();
     return `
 <div class="rd-toolbar">
   <strong>RSS Digest</strong>
+  <span class="rd-version" id="rd-version">v${ver}</span>
   <div class="rd-btn" id="rd-btn-scan">${zh ? "立即扫描" : "Scan now"}</div>
   <div class="rd-btn" id="rd-btn-rescan">${zh ? "重新扫描" : "Rescan"}</div>
   <div class="rd-btn" id="rd-btn-export">${zh ? "导出 Markdown" : "Export MD"}</div>
@@ -493,6 +553,10 @@ Zotero.RSSDigest = {
 </div>
 <div id="rd-pane-prefs">
   <div id="rss-digest-prefs" class="rd-form">
+    <div class="rd-actions rd-version-row">
+      <span class="rd-hint">${zh ? "当前版本" : "Version"} v${ver}</span>
+      <div class="rd-btn" id="rss-digest-download">${zh ? "下载 XPI" : "Download XPI"}</div>
+    </div>
     <h2>LLM API</h2>
     <label>Base URL</label>
     <textarea id="rss-digest-api-base" class="rd-single" rows="1"></textarea>
@@ -516,6 +580,26 @@ Zotero.RSSDigest = {
       </div>
     </div>
     <p class="rd-hint">${zh ? "选择中文后，标题、摘要和提炼卡片都会译成中文，原标题仍保留。" : "When Chinese is selected, title, abstract and digest cards are translated. The original title is kept."}</p>
+    <div class="rd-row">
+      <div>
+        <label>${zh ? "回看天数" : "Lookback days"}</label>
+        <textarea id="rss-digest-lookback" class="rd-single" rows="1"></textarea>
+      </div>
+      <div>
+        <label>${zh ? "起始日期 (YYYY-MM-DD)" : "From (YYYY-MM-DD)"}</label>
+        <textarea id="rss-digest-scan-from" class="rd-single" rows="1"></textarea>
+      </div>
+      <div>
+        <label>${zh ? "结束日期 (YYYY-MM-DD)" : "To (YYYY-MM-DD)"}</label>
+        <textarea id="rss-digest-scan-to" class="rd-single" rows="1"></textarea>
+      </div>
+    </div>
+    <p class="rd-hint">${
+      zh
+        ? "只扫描这个时间范围内的条目。日期留空则按「回看天数」从今天往回算（默认 7 天）。填了起始/结束日期则按该区间。点「填入最近 N 天」可把当前回看天数写成具体日期。"
+        : "Only items in this window are scanned. Leave dates empty to use lookback days from today (default 7). Fill from/to for a fixed range. “Fill last N days” writes the lookback as dates."
+    }</p>
+    <div class="rd-btn" id="rss-digest-fill-window">${zh ? "填入最近 N 天" : "Fill last N days"}</div>
     <label>Save-to collection name</label>
     <textarea id="rss-digest-collection" class="rd-single" rows="1"></textarea>
     <h2>Research profile</h2>
@@ -597,7 +681,14 @@ Zotero.RSSDigest = {
   background: #f4f4f4;
   color: #111;
 }
-#rss-digest-host .rd-toolbar strong { margin-right: 8px; flex-shrink: 0; }
+#rss-digest-host .rd-toolbar strong { margin-right: 4px; flex-shrink: 0; }
+#rss-digest-host .rd-version {
+  margin-right: 8px;
+  flex-shrink: 0;
+  opacity: .65;
+  font-variant-numeric: tabular-nums;
+}
+#rss-digest-host .rd-version-row { margin: 0 0 8px; }
 #rss-digest-host #rd-status {
   flex: 1;
   min-width: 0;
@@ -651,6 +742,7 @@ Zotero.RSSDigest = {
 #rss-digest-host .rd-row { display: flex; gap: 12px; }
 #rss-digest-host .rd-row > * { flex: 1; }
 #rss-digest-host .rd-hint { opacity: .75; font-size: 12px; margin: 2px 0 8px; }
+#rss-digest-host #rss-digest-fill-window { margin: 4px 0 10px; }
 #rss-digest-host .rd-progress {
   display: none;
   margin: 0 0 12px;
@@ -1380,14 +1472,59 @@ Zotero.RSSDigest = {
     }
   },
 
-  _onOrAfter(item, start) {
+  _localISODate(d = new Date()) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return y + "-" + m + "-" + day;
+  },
+
+  _parseISODate(raw) {
+    const m = String(raw || "").trim().match(/(\d{4}-\d{2}-\d{2})/);
+    return m ? m[1] : "";
+  },
+
+  _addDaysISO(iso, days) {
+    const m = String(iso || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) {
+      return "";
+    }
+    const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+    d.setDate(d.getDate() + days);
+    return this._localISODate(d);
+  },
+
+  scanWindow() {
+    const days = Math.max(1, Number(this.pref("firstLookbackDays", 7)) || 7);
+    const today = this._localISODate();
+    const fromPref = this._parseISODate(this.pref("scanFrom", ""));
+    const toPref = this._parseISODate(this.pref("scanTo", ""));
+    let to = toPref || today;
+    let from = fromPref || this._addDaysISO(to, -days);
+    if (from > to) {
+      const tmp = from;
+      from = to;
+      to = tmp;
+    }
+    return { from, to, days };
+  },
+
+  _itemDateISO(item) {
     for (const raw of [item.date, item.dateAdded]) {
-      const m = String(raw || "").match(/(\d{4}-\d{2}-\d{2})/);
-      if (m) {
-        return m[1] >= start;
+      const iso = this._parseISODate(raw);
+      if (iso) {
+        return iso;
       }
     }
-    return true;
+    return "";
+  },
+
+  _inScanWindow(item, win) {
+    const d = this._itemDateISO(item);
+    if (!d) {
+      return true;
+    }
+    return d >= win.from && d <= win.to;
   },
 
   async scan({ silent, rescan } = {}) {
@@ -1417,15 +1554,10 @@ Zotero.RSSDigest = {
     );
     const state = await this.loadState();
     const seen = new Set(state.seen_guids || []);
-    const lookback = Number(this.pref("firstLookbackDays", 7));
-    const start = new Date();
-    start.setDate(start.getDate() - lookback);
-    const startISO = start.toISOString().slice(0, 10);
-    let fresh;
-    if (rescan || !seen.size) {
-      fresh = rows.filter((it) => this._onOrAfter(it, startISO));
-    } else {
-      fresh = rows.filter((it) => !seen.has(it.guid));
+    const range = this.scanWindow();
+    let fresh = rows.filter((it) => this._inScanWindow(it, range));
+    if (!rescan && seen.size) {
+      fresh = fresh.filter((it) => !seen.has(it.guid));
     }
 
     await this._reportProgress({
@@ -1433,8 +1565,23 @@ Zotero.RSSDigest = {
       current: 1,
       total: 1,
       detail: this.t(
-        "新条目 " + fresh.length + " / 共 " + rows.length,
-        fresh.length + " new / " + rows.length + " total",
+        "新条目 " +
+          fresh.length +
+          " / 共 " +
+          rows.length +
+          "（" +
+          range.from +
+          " ~ " +
+          range.to +
+          "）",
+        fresh.length +
+          " new / " +
+          rows.length +
+          " total (" +
+          range.from +
+          " ~ " +
+          range.to +
+          ")",
       ),
     });
 
