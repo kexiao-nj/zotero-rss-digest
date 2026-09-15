@@ -26,7 +26,10 @@ FIELD_MAP = {
 }
 
 DATE_RE = re.compile(r"(\d{4}-\d{2}-\d{2})")
-TAG_RE = re.compile(r"<[^>]+>")
+TAG_RE = re.compile(r"</?[A-Za-z][A-Za-z0-9:_-]*\b[^>]*>")
+CDATA_RE = re.compile(r"<!\[CDATA\[(.*?)\]\]>", re.I | re.S)
+COMMENT_RE = re.compile(r"<!--.*?-->", re.S)
+PI_RE = re.compile(r"<\?.*?\?>", re.S)
 
 
 def parse_item_date(raw: str | None) -> str:
@@ -37,8 +40,16 @@ def parse_item_date(raw: str | None) -> str:
 
 
 def clean_text(value: str | None) -> str:
-    text = html.unescape((value or "").strip())
-    text = TAG_RE.sub(" ", text)
+    text = (value or "").replace("\ufeff", "").replace("\xa0", " ")
+    for _ in range(4):
+        prev = text
+        text = html.unescape(text)
+        text = CDATA_RE.sub(r"\1", text)
+        text = COMMENT_RE.sub(" ", text)
+        text = PI_RE.sub(" ", text)
+        text = TAG_RE.sub(" ", text)
+        if text == prev:
+            break
     return re.sub(r"\s+", " ", text).strip()
 
 

@@ -32,6 +32,18 @@ def test_clean_text_strips_rss_html() -> None:
     assert clean_text("RT&amp;T-AMP") == "RT&T-AMP"
 
 
+def test_clean_text_decodes_entities_and_encoded_tags() -> None:
+    encoded = "&lt;p&gt;Hello &amp;amp; world&lt;/p&gt;"
+    assert clean_text(encoded) == "Hello & world"
+    assert clean_text("P &lt; 0.05 and n &gt; 10") == "P < 0.05 and n > 10"
+    assert clean_text("P < 0.05 and n > 10") == "P < 0.05 and n > 10"
+    assert clean_text("H<sub>2</sub>O &nbsp; in&nbsp;situ") == "H 2 O in situ"
+    assert "<i>" not in clean_text("&lt;i&gt;E. coli&lt;/i&gt;")
+    decoded = clean_text("&#181;m")
+    assert "&#" not in decoded
+    assert decoded.endswith("m")
+
+
 def test_parse_zotero_json_items_skips_feed_metadata() -> None:
     payload = [
         {"data": {"name": "Cell", "url": "http://cell.example/rss"}},

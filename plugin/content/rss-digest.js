@@ -885,7 +885,7 @@ Zotero.RSSDigest = {
   },
 
   _esc(s) {
-    return String(s || "")
+    return this._clean(s)
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
@@ -1024,9 +1024,9 @@ Zotero.RSSDigest = {
     const creators = item.getCreators ? item.getCreators() : [];
     const authors = creators.map((c) => {
       if (c.fieldMode === 1) {
-        return c.lastName || "";
+        return this._clean(c.lastName || "");
       }
-      return [c.firstName, c.lastName].filter(Boolean).join(" ");
+      return this._clean([c.firstName, c.lastName].filter(Boolean).join(" "));
     }).filter(Boolean);
     const abstract = this._clean(item.getField("abstractNote") || "");
     const doi = String(item.getField("DOI") || "")
@@ -1037,7 +1037,7 @@ Zotero.RSSDigest = {
       key: item.key,
       guid: item.guid || item.getField("url") || item.key,
       libraryID: item.libraryID,
-      feedName: feed.name || "",
+      feedName: this._clean(feed.name || ""),
       feedURL: feed.url || "",
       title: this._clean(item.getField("title") || ""),
       abstract,
@@ -1056,14 +1056,85 @@ Zotero.RSSDigest = {
     };
   },
 
+  _unescapeEntities(value) {
+    const named = {
+      amp: "&",
+      lt: "<",
+      gt: ">",
+      quot: '"',
+      apos: "'",
+      nbsp: " ",
+      ensp: " ",
+      emsp: " ",
+      thinsp: " ",
+      shy: "",
+      ndash: "–",
+      mdash: "—",
+      hellip: "…",
+      copy: "©",
+      reg: "®",
+      trade: "™",
+      deg: "°",
+      minus: "−",
+      times: "×",
+      divide: "÷",
+      plusmn: "±",
+      le: "≤",
+      ge: "≥",
+      ne: "≠",
+      alpha: "α",
+      beta: "β",
+      gamma: "γ",
+      mu: "μ",
+      pi: "π",
+      micro: "µ",
+      lsquo: "‘",
+      rsquo: "’",
+      ldquo: "“",
+      rdquo: "”",
+      sbquo: "‚",
+      bdquo: "„",
+      bull: "•",
+      middot: "·",
+    };
+    return String(value || "").replace(/&(#x?[0-9a-f]+|[a-z]+);/gi, (match, ent) => {
+      if (ent[0] === "#") {
+        const n =
+          ent[1] === "x" || ent[1] === "X"
+            ? parseInt(ent.slice(2), 16)
+            : parseInt(ent.slice(1), 10);
+        if (!Number.isFinite(n) || n < 0) {
+          return match;
+        }
+        try {
+          return String.fromCodePoint(n);
+        } catch (e) {
+          return match;
+        }
+      }
+      return Object.prototype.hasOwnProperty.call(named, ent.toLowerCase())
+        ? named[ent.toLowerCase()]
+        : match;
+    });
+  },
+
   _clean(value) {
-    return String(value || "")
-      .replace(/<[^>]+>/g, " ")
-      .replace(/&amp;/g, "&")
-      .replace(/&lt;/g, "<")
-      .replace(/&gt;/g, ">")
-      .replace(/\s+/g, " ")
-      .trim();
+    let text = String(value || "")
+      .replace(/[\u200B-\u200D\uFEFF]/g, "")
+      .replace(/\u00a0/g, " ");
+    for (let i = 0; i < 4; i++) {
+      const prev = text;
+      text = this._unescapeEntities(text);
+      text = text.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/gi, "$1");
+      text = text.replace(/<!--[\s\S]*?-->/g, " ");
+      text = text.replace(/<\?[\s\S]*?\?>/g, " ");
+      // Real tags only; keep comparisons like P < 0.05.
+      text = text.replace(/<\/?[A-Za-z][A-Za-z0-9:_-]*\b[^>]*>/g, " ");
+      if (text === prev) {
+        break;
+      }
+    }
+    return text.replace(/\s+/g, " ").trim();
   },
 
   _date(raw) {
@@ -1213,11 +1284,13 @@ Zotero.RSSDigest = {
     return {
       title_zh: "",
       abstract_zh: "",
-      one_liner: (snippet.split(". ")[0] || item.title).slice(0, 160),
+      one_liner: this._clean(snippet.split(". ")[0] || item.title).slice(0, 160),
       problem: "",
       method: "",
-      conclusion: snippet,
-      why_relevant: scored.reasons.join("; ") || this.t("规则筛选命中", "Matched rules"),
+      conclusion: this._clean(snippet),
+      why_relevant: this._clean(
+        scored.reasons.join("; ") || this.t("规则筛选命中", "Matched rules"),
+      ),
       suggestion,
     };
   },
@@ -1274,14 +1347,15 @@ Zotero.RSSDigest = {
 
   _applyCardData(scored, data) {
     const prev = scored.card || {};
+    const clean = (v) => this._clean(v);
     scored.card = {
-      title_zh: data.title_zh || data.title || prev.title_zh || "",
-      abstract_zh: data.abstract_zh || data.abstract || prev.abstract_zh || "",
-      one_liner: data.one_liner || prev.one_liner || "",
-      problem: data.problem || prev.problem || "",
-      method: data.method || prev.method || "",
-      conclusion: data.conclusion || prev.conclusion || "",
-      why_relevant: data.why_relevant || data.reason || prev.why_relevant || "",
+      title_zh: clean(data.title_zh || data.title || prev.title_zh || ""),
+      abstract_zh: clean(data.abstract_zh || data.abstract || prev.abstract_zh || ""),
+      one_liner: clean(data.one_liner || prev.one_liner || ""),
+      problem: clean(data.problem || prev.problem || ""),
+      method: clean(data.method || prev.method || ""),
+      conclusion: clean(data.conclusion || prev.conclusion || ""),
+      why_relevant: clean(data.why_relevant || data.reason || prev.why_relevant || ""),
       suggestion: data.suggestion || prev.suggestion || "",
     };
     this._normalizeSuggestion(scored.card);
@@ -1826,14 +1900,6 @@ Zotero.RSSDigest = {
     await note.saveTx();
   },
 
-  _esc(s) {
-    return String(s || "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
-  },
-
   async exportMarkdown() {
     this.openOverlay("results");
     const result = this.lastScan;
@@ -1900,6 +1966,7 @@ Zotero.RSSDigest = {
   _resultToMarkdown(result) {
     const zh = this.isZh();
     const L = (a, b) => (zh ? a : b);
+    const T = (s) => this._clean(s);
     const lines = [];
     const day = String(result.at || new Date().toISOString()).slice(0, 10);
     lines.push("# RSS Digest · " + day);
@@ -1913,7 +1980,7 @@ Zotero.RSSDigest = {
       lines.push("## " + L("本轮主题", "Themes"));
       lines.push("");
       for (const theme of result.themes) {
-        lines.push("- " + theme);
+        lines.push("- " + T(theme));
       }
       lines.push("");
     }
@@ -1922,18 +1989,18 @@ Zotero.RSSDigest = {
     (result.related || []).forEach((scored, i) => {
       const it = scored.item || {};
       const card = scored.card || {};
-      const title = card.title_zh || it.title || "(untitled)";
+      const title = T(card.title_zh || it.title || "(untitled)");
       lines.push("### " + (i + 1) + ". " + title);
       lines.push("");
       if (card.title_zh && it.title && card.title_zh !== it.title) {
-        lines.push("- **" + L("原标题", "Original title") + ":** " + it.title);
+        lines.push("- **" + L("原标题", "Original title") + ":** " + T(it.title));
       }
       const venue = [it.feedName, it.publicationTitle].filter(Boolean).join(" / ");
       if (venue) {
-        lines.push("- **" + L("订阅", "Feed") + ":** " + venue);
+        lines.push("- **" + L("订阅", "Feed") + ":** " + T(venue));
       }
       if (it.authorLine) {
-        lines.push("- **" + L("作者", "Authors") + ":** " + it.authorLine);
+        lines.push("- **" + L("作者", "Authors") + ":** " + T(it.authorLine));
       }
       if (it.date || it.dateAdded) {
         lines.push("- **" + L("日期", "Date") + ":** " + (it.date || it.dateAdded));
@@ -1951,18 +2018,18 @@ Zotero.RSSDigest = {
       );
       lines.push("");
       if (card.one_liner) {
-        lines.push("**" + L("一句话", "One-liner") + ":** " + card.one_liner);
+        lines.push("**" + L("一句话", "One-liner") + ":** " + T(card.one_liner));
         lines.push("");
       }
       if (card.why_relevant) {
-        lines.push("**" + L("为何相关", "Why relevant") + ":** " + card.why_relevant);
+        lines.push("**" + L("为何相关", "Why relevant") + ":** " + T(card.why_relevant));
         lines.push("");
       }
       if (card.conclusion) {
-        lines.push("**" + L("要点", "Takeaway") + ":** " + card.conclusion);
+        lines.push("**" + L("要点", "Takeaway") + ":** " + T(card.conclusion));
         lines.push("");
       }
-      const abs = card.abstract_zh || it.abstract;
+      const abs = T(card.abstract_zh || it.abstract);
       if (abs) {
         lines.push("**" + L("摘要", "Abstract") + ":**");
         lines.push("");
@@ -1972,7 +2039,7 @@ Zotero.RSSDigest = {
       if (card.abstract_zh && it.abstract && card.abstract_zh !== it.abstract) {
         lines.push("<details><summary>" + L("原文摘要", "Original abstract") + "</summary>");
         lines.push("");
-        lines.push(it.abstract);
+        lines.push(T(it.abstract));
         lines.push("");
         lines.push("</details>");
         lines.push("");
