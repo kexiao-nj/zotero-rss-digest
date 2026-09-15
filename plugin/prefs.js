@@ -1,0 +1,13 @@
+pref("extensions.rssdigest.apiBase", "https://api.openai.com/v1");
+pref("extensions.rssdigest.apiKey", "");
+pref("extensions.rssdigest.model", "gpt-4o-mini");
+pref("extensions.rssdigest.intervalHours", 6);
+pref("extensions.rssdigest.language", "zh");
+pref("extensions.rssdigest.collectionName", "RSS Digest");
+pref("extensions.rssdigest.topics", "spatial omics\nsingle-cell genomics\ngene regulation");
+pref("extensions.rssdigest.includeKeywords", "spatial\nsingle-cell\nsingle cell\ntranscriptom\nCRISPR\ngenome\neigenom\norganoid");
+pref("extensions.rssdigest.excludeKeywords", "");
+pref("extensions.rssdigest.minRuleScore", 2);
+pref("extensions.rssdigest.minLlmScore", 3);
+pref("extensions.rssdigest.llmBatchCap", 30);
+pref("extensions.rssdigest.firstLookbackDays", 7);

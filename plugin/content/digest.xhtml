@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="digest.css" type="text/css"?>
+<window id="rss-digest-window"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        xmlns:html="http://www.w3.org/1999/xhtml"
+        title="RSS Digest"
+        width="980"
+        height="780"
+        persist="screenX screenY width height">
+  <vbox flex="1">
+    <hbox class="toolbar" align="center">
+      <button id="btn-scan" label="Scan now"/>
+      <button id="btn-prefs" label="Settings"/>
+      <label id="status" flex="1" crop="end"/>
+    </hbox>
+    <html:div id="summary" class="summary"></html:div>
+    <html:div id="cards" class="cards" flex="1"></html:div>
+  </vbox>
+</window>

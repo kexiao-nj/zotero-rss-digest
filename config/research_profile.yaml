@@ -1,0 +1,35 @@
+# Edit this file to match your research. Empty include_keywords keeps every new item
+# for the digest (rule_score stays neutral). Fill keywords to pre-filter before LLM.
+
+topics:
+  - spatial omics
+  - single-cell genomics
+  - gene regulation
+
+include_keywords:
+  - spatial
+  - single-cell
+  - single cell
+  - transcriptom
+  - CRISPR
+  - genome
+  - epigenom
+  - organoid
+
+exclude_keywords: []
+
+# If non-empty, an item must match at least one of these (title/abstract/feed).
+require_any_keywords: []
+
+# Substring match against publicationTitle or feed name. Empty = no journal filter.
+journal_whitelist: []
+
+feed_allowlist: []
+feed_blocklist: []
+
+min_rule_score: 2
+min_llm_score: 3
+
+priority_thresholds:
+  close_read: 4
+  skim: 3

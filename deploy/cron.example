@@ -1,0 +1,8 @@
+# Cron example — replace REPO and PYTHON, then crontab -e
+#
+# Every 6 hours, while the machine is on. Zotero must be running
+# so the Local API / sqlite snapshot is available.
+#
+# 0 */6 * * * cd REPO && ZOTERO_RSS_ROOT=REPO PYTHON -m zotero_rss_analyzer run >> REPO/logs/cron.log 2>&1
+
+0 */6 * * * cd /Users/YOU/0.Studies/zotero-tss-analyzer && ZOTERO_RSS_ROOT=/Users/YOU/0.Studies/zotero-tss-analyzer /Users/YOU/0.Studies/zotero-tss-analyzer/.venv/bin/python -m zotero_rss_analyzer run >> /Users/YOU/0.Studies/zotero-tss-analyzer/logs/cron.log 2>&1

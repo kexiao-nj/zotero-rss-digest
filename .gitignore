@@ -1,0 +1,17 @@
+.env
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.DS_Store
+.tmp/
+logs/
+data/state.json
+reports/*.md
+reports/*.jsonl
+findings.md
+build/
+node_modules/

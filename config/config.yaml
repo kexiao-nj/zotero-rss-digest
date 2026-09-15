@@ -1,0 +1,30 @@
+zotero:
+  data_dir: ~/Zotero
+  local_api_base: http://127.0.0.1:23119/api
+  copy_retries: 3
+  copy_retry_seconds: 1.5
+
+schedule:
+  interval_hours: 6
+
+run:
+  first_run_lookback_days: 7
+  llm_batch_cap: 30
+  enrich: true
+  language: zh
+
+llm:
+  api_key_env: OPENAI_API_KEY
+  base_url_env: OPENAI_BASE_URL
+  model_env: OPENAI_MODEL
+  default_base_url: https://api.openai.com/v1
+  default_model: gpt-4o-mini
+  temperature: 0.2
+  timeout_seconds: 90
+  max_tokens: 1200
+
+output:
+  reports_dir: reports
+  findings_file: findings.md
+  skipped_file: reports/skipped.jsonl
+  state_file: data/state.json

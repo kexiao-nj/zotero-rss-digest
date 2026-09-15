@@ -1,0 +1,28 @@
+#rss-digest-prefs-window {
+  min-width: 480px;
+  min-height: 520px;
+  padding: 8px;
+}
+
+#rss-digest-prefs {
+  padding: 4px 8px 8px;
+}
+
+#rss-digest-prefs .rss-digest-title {
+  font-weight: 700;
+  font-size: 16px;
+  margin: 4px 0 8px;
+}
+
+#rss-digest-prefs groupbox {
+  margin-bottom: 8px;
+}
+
+#rss-digest-prefs description {
+  opacity: 0.8;
+  margin: 2px 0 8px;
+}
+
+#rss-digest-prefs .rss-digest-actions {
+  padding: 8px 0 4px;
+}

@@ -1,0 +1,107 @@
+# Zotero RSS Digest
+
+[English](README.en.md)
+
+Zotero 10 插件：读取左侧 **订阅（RSS Feeds）**，按研究画像筛选，可选调用兼容 OpenAI 的 LLM 写成中文/英文卡片，再把感兴趣的文献一键存进「我的文库」。
+
+当前包版本：**0.2.16**。兼容 **Zotero 10.0–10.0.\***（含 10.0.2）。
+
+## 安装
+
+1. 打包（在仓库根目录）：
+
+```bash
+python3 plugin/package_xpi.py
+```
+
+2. 在 Zotero：**工具 → 插件 → 齿轮 → Install Plugin From File…**，选择 `build/rss-digest.xpi`。
+3. **完全退出并重启 Zotero**。
+
+不要把本插件注册进 Zotero 自带设置页；设置在插件自己的面板里。
+
+## 使用
+
+菜单：**工具 → RSS Digest**。主窗口上会盖一层面板（立即扫描 / 重新扫描 / 导出 Markdown / 结果 / 设置 / 关闭）。
+
+| 操作 | 作用 |
+|---|---|
+| **立即扫描** | 只处理尚未见过的条目（增量）。 |
+| **重新扫描** | 按回看窗口（默认最近 7 天）再扫一遍，不跳过已见过的 GUID。 |
+| **导出 Markdown** | 把当前结果存成 `.md` 文件。需先有扫描结果。 |
+| **结果** | 查看卡片。 |
+| **设置** | API、语言、Collection、Topics / Keywords。改完后点 **保存设置**。 |
+| **添加到我的文库** | 用 Zotero 自己的订阅翻译写入指定 Collection，并附一条提炼笔记。 |
+
+高分条目**不会**自动入库，由你点选。
+
+扫描进度会显示在结果页（读订阅 / LLM 提炼 / 补译 / 百分比）。关闭面板不会丢掉本次结果；结果也写在 Zotero 数据目录的 `rss-digest-state.json` 里。
+
+## 设置说明
+
+| 字段 | 含义 |
+|---|---|
+| Base URL / API Key / Model | 兼容 OpenAI 的接口（DeepSeek、OpenRouter、本地 vLLM 均可）。**不填 Key 则只做关键词筛选，不翻译、不调用 LLM。** |
+| Interval (hours) | 后台定时扫描间隔，默认 6 小时。 |
+| Digest language | **中文**：标题、摘要和提炼卡片译成简体中文，原标题/原文摘要仍保留。**English**：卡片为英文。 |
+| Save-to collection | 入库集合名，不存在会自动创建，默认 `RSS Digest`。 |
+| **Topics** | 课题方向，一行一个。与 Include 一起做匹配并加规则分；有 API Key 时作为 LLM 的研究画像。 |
+| **Include keywords** | 希望留下的词，一行一个。在标题、摘要、期刊、作者、DOI 里做**不区分大小写的子串**匹配。 |
+| **Exclude keywords** | 黑名单。命中任一排除词则直接跳过，不送给 LLM。 |
+
+改完必须点 **保存设置**。**Test LLM** 会先保存再测接口。
+
+## 打分（卡片上的 Score）
+
+Score 是 **0–5 的相关度**，不是引用量。显示值优先用 LLM 分；没有则用规则分。
+
+**规则分（先筛）**
+
+- 命中 Exclude → 0 分，丢掉。
+- Topics 与 Include **都为空** → 每篇先给 3 分。
+- 一个 Include/Topic 都没命中 → 0 分，丢掉。
+- 有命中 → `min(5, 2 + 不同关键词个数)`（1 个词 3 分，2 个词 4 分，3 个及以上 5 分）。
+- 规则分 **低于 2** 的不进入后续步骤。
+
+**LLM 分（再打）**
+
+有 API Key 时，规则分过关的前 **30** 篇交给模型，按 Topics 再给 0–5 整数。超过 30 篇或 LLM 失败时退回规则分。LLM 分 **低于 3** 的不显示。
+
+**建议**
+
+| 分 | 建议 |
+|---|---|
+| ≥ 4 | 精读 |
+| ≥ 3 | 扫摘要 |
+| 更低 | 忽略 |
+
+结果按最终分从高到低排列。
+
+## 语言与翻译
+
+选择中文且已填 API Key 时，插件会把标题、摘要、一句话、要点译成简体中文。LLM 漏译或失败时会再补译一轮。没有 API Key 时卡片保持原文。
+
+## 数据位置
+
+已见过的条目 GUID 与最近一次扫描结果：Zotero 数据目录下的 `rss-digest-state.json`（常见为 `~/Zotero/rss-digest-state.json`）。
+
+## 开发说明
+
+插件清单必须包含 `applications.zotero.id`、`update_url`、`strict_min_version`、`strict_max_version`（`10.0.*`），否则 Zotero 10 会拒绝安装。
+
+不要调用 `Zotero.ftl.addResourceIds`，也不要 `PreferencePanes.register`：二者都会破坏 Zotero 自带设置页。
+
+面板是盖在主窗口上的 HTML，而不是独立 chrome 窗口。控件使用 `textarea` 和可点击的 `div`（XUL 主窗口里 HTML `input`/`button` 往往点不到）。
+
+## 可选：Python CLI
+
+仓库里仍有离线命令行 `zotero-rss`，适合不装插件、只出 Markdown 简报的场景。它通过复制 `zotero.sqlite` 读 Feeds（Local API 不暴露订阅）。
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e .
+zotero-rss probe
+zotero-rss run --no-llm --no-enrich
+```
+
+配置见 `config/config.yaml` 与 `config/research_profile.yaml`。
